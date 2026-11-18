@@ -4,11 +4,29 @@ Django 5.2 --API REST Framework 3.15 --PostgreSQL 15.3 --Python 3.12.2
 """
 import os
 from pathlib import Path
-from dotenv import load_dotenv
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 #Chargement des variables d'environnement depuis le fichier .env
-load_dotenv(BASE_DIR / '.env')
+# Implémentation légère évitant une dépendance externe manquante.
+def load_env_file(path):
+    if not path.exists():
+        return
+
+    with path.open('r', encoding='utf-8') as env_file:
+        for line in env_file:
+            line = line.strip()
+            if not line or line.startswith('#') or '=' not in line:
+                continue
+
+            key, value = line.split('=', 1)
+            key = key.strip()
+            value = value.strip().strip('"\'')
+            if key and key not in os.environ:
+                os.environ[key] = value
+
+
+load_env_file(BASE_DIR / '.env')
 
 #securité
 SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-key-change-before-production')
